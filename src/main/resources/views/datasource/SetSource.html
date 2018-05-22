@@ -1,0 +1,190 @@
+<!DOCTYPE html >
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+<head>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>SetDataSource</title>
+    <!--Bootstrap-->
+    <link th:href="@{/Bootstrap/bootstrap/css/bootstrap.min.css}" rel="stylesheet"/>
+    <link th:href="@{/Bootstrap/bootstrapvalidator/css/bootstrapValidator.min.css}" rel="stylesheet"/>
+    <link th:href="@{/Bootstrap/bootstrap-datetimepicker/css/bootstrap-datetimepicker.min.css}" rel="stylesheet"/>
+    <link th:href="@{/Bootstrap/bootstrap-select/dist/css/bootstrap-select.min.css}" rel="stylesheet"/>
+    <link th:href="@{/Bootstrap/toastr/toastr.css}" rel="stylesheet"/>
+
+    <script th:src="@{/js/jquery-3.3.1.min.js}"></script>
+    <script th:src="@{/Bootstrap/bootstrap/js/bootstrap.min.js}"></script>
+    <script th:src="@{/Bootstrap/bootstrapvalidator/js/bootstrapValidator.min.js}"></script>
+    <script th:src="@{/Bootstrap/bootstrapvalidator/js/language/zh_CN.js}"></script>
+    <script th:src="@{/Bootstrap/bootstrap-datetimepicker/js/bootstrap-datetimepicker.min.js}"></script>
+    <script th:src="@{/Bootstrap/bootstrap-datetimepicker/js/locales/bootstrap-datetimepicker.zh-CN.js}"></script>
+    <script th:src="@{/Bootstrap/bootstrap-select/dist/js/bootstrap-select.min.js}"></script>
+    <script th:src="@{/Bootstrap/bootstrap-select/dist/js/i18n/defaults-zh_CN.min.js}"></script>
+    <script th:src="@{/Bootstrap/toastr/toastr.min.js}"></script>
+</head>
+<body>
+<div class="container">
+    <div class="text-center">
+        <!--style="box-shadow: 1px 1px 1px #888888;background-color:#fffdf5;"-->
+        <h2>数据源库配置</h2>
+    </div>
+    <div style="padding: 15px;">
+        <div class="panel-heading">
+            <button type="submit" class="btn btn-primary" data-toggle="modal" data-target="#addModal">新增源库配置</button>
+            <button type="submit" class="btn btn-default" onclick="fn_select()">查询</button>
+        </div>
+    </div>
+    <div class="row">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <div class="text-muted" style="display: inline">数据源库信息</div>
+            </div>
+            <div style="padding: 15px;">
+                <table class="table table-striped" style="text-align: center;">
+                    <thead>
+                    <tr>
+                        <td style="font-weight: bold;">数据源库ID</td>
+                        <td style="font-weight: bold;">数据源库名</td>
+                        <td style="font-weight: bold;">数据库类型</td>
+                        <td style="font-weight: bold;">连接url地址</td>
+                        <td style="font-weight: bold;">数据库用户名</td>
+                        <td style="font-weight: bold;display:none;">数据库登录密码</td>
+                        <td style="font-weight: bold;">创建用户</td>
+                        <td style="font-weight: bold;">创建时间</td>
+                        <td style="font-weight: bold;width: 180px;">修改/删除</td>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <!--/*@thymesVar id="dslist" type="java"*/-->
+                    <tr th:each="row : ${dslist}">
+                        <td th:text="${row.ds_id}"></td>
+                        <td th:text="${{row.ds_name}}"></td>
+                        <td th:text="${{row.ds_type}}"></td>
+                        <td th:text="${{row.ds_url}}"></td>
+                        <td th:text="${{row.ds_username}}"></td>
+                        <td th:text="${{row.ds_password}}" style="display: none"></td>
+                        <td th:text="${{row.bizuser}}"></td>
+                        <td th:text="${{row.biztime}}"></td>
+                        <td width="180px">
+                            <button class="btn btn-default" type="button" name="options4" id="bt_update"
+                                    onclick="return fn_updatedb(this)"> 修改库
+                            </button>&nbsp;
+                            <button class="btn btn-default" type="button" name="options5" id="bt_delete"
+                                    onclick="return fn_deletedb(this)"> 删除库
+                            </button>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<!--新增配置页面-->
+<div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="myModalLabel">新增数据源配置</h4>
+            </div>
+            <div class="modal-header">
+                <form role="form" class="form-horizontal">
+                    <!-- has-success-->
+                    <div class="form-group">
+                        <label for="db_name" class="col-sm-2 control-label">源库名称</label>
+                        <div class="col-sm-10">
+                            <input type="text" id="db_name" class="form-control" placeholder="请输字母和数字"/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label" for="db_type">源库类型</label>
+                        <div class="col-lg-10">
+                            <select id="db_type" class="form-control">
+                                <option th:value="1" th:text="OARCLE"></option>
+                                <option th:value="2" th:text="MYSQL"></option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="db_url" class="col-sm-2 control-label">连接URL</label>
+                        <div class="col-sm-10">
+                            <input type="text" id="db_url" class="form-control" placeholder=""/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="db_username" class="col-sm-2 control-label">用户名</label>
+                        <div class="col-sm-10">
+                            <input type="text" id="db_username" class="form-control" placeholder=""/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="db_password" class="col-sm-2 control-label">密码</label>
+                        <div class="col-sm-10">
+                            <input type="password" id="db_password" class="form-control" placeholder=""/>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" onclick="fn_adddb()">保存</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+</body>
+<script type="text/javascript">
+    function fn_deletedb(deldb) {
+        var ps = $(deldb).parent().siblings();
+        var ds_id = ps[0].innerHTML;
+        $.ajax({
+            url: "/datasource/deleteDb.do", type: "post", dataType: "json",
+            data: {"ds_id": ds_id},
+            success: function (result) {
+                if (result.state == 1) {
+                    //toastr.success("删除成功！")
+                    alert("删除成功！");
+                    window.location.reload();
+                } else {
+                    alert("删除失败！\r\n" + result.message);
+                }
+            },
+            error: function (result) {
+                alert("调用服务出错！")
+            }
+        })
+    }
+
+    function fn_adddb() {
+        var db_name = $("#db_name").val();
+        var db_type = $("#db_type").val();
+        var db_url = $("#db_url").val();
+        var db_username = $("#db_username").val();
+        var db_password = $("#db_password").val();
+        $.ajax({
+            url: "/datasource/addDb.do", type: "post", dataType: "json",
+            data: {
+                "ds_name": db_name, "ds_type": db_type, "ds_url": db_url,
+                "ds_username": db_username, "ds_password": db_password
+            },
+            success: function (result) {
+                if (result.state == 1) {
+                    //toastr.success("新增成功！");
+                    alert("新增成功！");
+                } else {
+                    alert("新增失败！\r\n" + result.message)
+                }
+            },
+            error: function (result) {
+                alert("调用服务出错！")
+            }
+        })
+    }
+
+    function fn_select() {
+        window.location.reload()
+    }
+</script>
+</html>

@@ -1,0 +1,267 @@
+<!DOCTYPE html >
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+<head>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>SetDataSource</title>
+    <!--Bootstrap-->
+    <link th:href="@{/Bootstrap/bootstrap/css/bootstrap.min.css}" rel="stylesheet"/>
+    <link th:href="@{/Bootstrap/bootstrap-select/dist/css/bootstrap-select.min.css}" rel="stylesheet"/>
+    <link th:href="@{/Bootstrap/bootstrap-duallistbox/dist/bootstrap-duallistbox.min.css}" rel="stylesheet"/>
+
+    <script th:src="@{/js/jquery-3.3.1.min.js}"></script>
+    <script th:src="@{/Bootstrap/bootstrap/js/bootstrap.min.js}"></script>
+    <script th:src="@{/Bootstrap/bootstrap/js/bootstrap-tab.js}"></script>
+    <script th:src="@{/Bootstrap/bootstrap-select/dist/js/bootstrap-select.min.js}"></script>
+    <script th:src="@{/Bootstrap/bootstrap-select/dist/js/i18n/defaults-zh_CN.min.js}"></script>
+    <script th:src="@{/Bootstrap/bootstrap-duallistbox/dist/jquery.bootstrap-duallistbox.min.js}"></script>
+</head>
+<body>
+<form class="form-horizontal" role="form">
+    <div id="legend" class="">
+        <legend class="">配置事件</legend>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">事件标识</label>
+        <div class="col-sm-10">
+            <input id="event_id" type="text" placeholder="英文或数字" class="input-xlarge"/>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">事件名称</label>
+        <div class="col-sm-10">
+            <input id="event_name" type="text" placeholder="" class="input-xlarge"/>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">主题及分类</label>
+        <div class="col-sm-10" style="display: flex;">
+            <select id="subject" class="selectpicker">
+                <option th:value="1" th:text="主题1"></option>
+                <option th:value="2" th:text="主题2"></option>
+            </select>&nbsp;
+            <select id="classify" class="selectpicker">
+                <option th:value="1" th:text="分类1"></option>
+                <option th:value="2" th:text="分类2"></option>
+            </select>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">监测表</label>
+        <div class="col-sm-10" style="display: flex;">
+            <select id="event_datasource" class="selectpicker" onchange="fn_dschg()">
+
+            </select>&nbsp;
+            <select id="event_table" class="selectpicker" onchange="fn_tabchg()">
+
+            </select>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">监测粒度</label>
+        <div class="col-sm-10">
+            <select id="monitor_ld" class="selectpicker" onchange="fn_eventLdChg(this)">
+                <option th:value="1" th:text="监测整行变化"></option>
+                <option th:value="2" th:text="监测字段变化"></option>
+            </select>
+        </div>
+    </div>
+    <div class="form-group" id="fg-chg-type">
+        <label class="col-sm-2 control-label">变化类型</label>
+        <div class="col-sm-10">
+            <select id="chg_type" class="selectpicker">
+                <option th:value="1" th:text="插入"></option>
+                <option th:value="2" th:text="修改"></option>
+                <option th:value="3" th:text="删除"></option>
+            </select>
+        </div>
+    </div>
+    <div class="form-group" id="fg-col-chg">
+        <label class="col-sm-2 control-label">字段值变化定义</label>
+        <div class="col-sm-10" style="display: flex;">
+            <input id="chg_old" type="text" placeholder="空表示任意值" class="input-xlarge"/>
+            &nbsp; 更新为： &nbsp;
+            <input id="chg_new" type="text" placeholder="空表示任意值" class="input-xlarge"/>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">监测方式</label>
+        <div class="col-sm-10">
+            <select id="monitor_type" class="selectpicker">
+                <option th:value="1" th:text="触发器"></option>
+                <option th:value="2" th:text="物化视图日志"></option>
+            </select>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="col-sm-2 control-label">事件消息内容</label>
+        <div class="col-sm-10" style="width: 500px;">
+            <select id="col_select" multiple="multiple" class="demo2">
+
+            </select>
+        </div>
+    </div>
+    <div class="form-group" style="width: 800px;">
+        <div class="text-center" style="padding: 15px;">
+            <button type="button" class="btn btn-default" onclick="fn_submit()">关闭</button>
+            <button type="button" class="btn btn-success" onclick="fn_submit()">保存</button>
+        </div>
+    </div>
+</form>
+</body>
+<script type="text/javascript">
+    $(function () {
+        // var demo2 = $('.demo2').bootstrapDualListbox({
+        //     nonSelectedListLabel: '所有字段',
+        //     selectedListLabel: '选择字段',
+        //     preserveSelectionOnMove: 'moved',
+        //     moveOnSelect: false,
+        //     nonSelectedFilter: ''
+        // });
+
+        document.getElementById("fg-col-chg").style.display = "none"
+        //document.getElementById("fg-chg-type").style.display = "none";
+        getDsOption();
+
+    });
+
+    function fn_eventLdChg(obj) {
+        if (obj.selectedOptions.item(0).value == 1) {
+            document.getElementById("fg-col-chg").style.display = "none";
+            document.getElementById("fg-chg-type").style.display = "inline";
+        } else {
+            document.getElementById("fg-col-chg").style.display = "inline";
+            document.getElementById("fg-chg-type").style.display = "none";
+        }
+    }
+
+    function fn_submit() {
+        var evt_id = $('#event_id').val()
+        var evt_name = $('#event_name').val()
+        var subject = $("#subject").val()
+        var classify = $("#classify").val()
+        var ds_id = $("#event_datasource").val()
+        var tab_name = $("#event_table").val()
+        var monitor_ld = $("#monitor_ld").val()
+        var chg_type = $("#chg_type").val()
+        var monitor_type = $("#monitor_type").val()
+        var chg_old = $("#chg_old").val()
+        var chg_new = $("#chg_new").val()
+        var msg_col_ar = $("#col_select").val();
+        var msg_col = "";
+        $.each(msg_col_ar,function (i) {
+            msg_col += msg_col_ar[i] + ",";
+        })
+
+        $.ajax({
+            type: "get", url: "/event/add.do", async: true,
+            data: {"evt_id": evt_id,"evt_name": evt_name,"subject": subject,"classify": classify,"ds_id": ds_id
+                ,"tab_name": tab_name,"monitor_ld": monitor_ld,"chg_type": chg_type,"monitor_type": monitor_type
+                ,"chg_old": chg_old,"chg_new": chg_new,"msg_col": msg_col},
+            success: function (result) {
+                if (result.state == 1) {
+                    alert("添加事件成功!");
+                }else {
+                    alert("添加事件失败！\r\n" + result.message);
+                }
+            },
+            error: function (result) {
+                alert("页面调用出错！")
+            }
+
+        });
+
+
+    }
+
+    function getDsOption() {
+        $.ajax({
+            url: "/event/getDatasource.do", type: "post", dataType: "json",
+            success: function (result) {
+                if (result.state == 1) {
+                    var data = result.data;
+                    var str = "<option>请选择</option>";
+                    $.each(data,function (i) {
+                        str += "<option value=" + data[i].id + ">" + data[i].value + "</option>"
+                    })
+                    $("#event_datasource").html(str);
+                    $("#event_datasource").selectpicker('refresh');
+                }else {
+                    alert("获取源库信息失败！\r\n" + result.message);
+                }
+            }
+        });
+    }
+    
+    function fn_dschg() {
+        var ds_id = $("#event_datasource").val();
+        if (ds_id == null) {
+            return
+        }
+        $.ajax({
+            url: "/event/getTableName.do", type: "post", dataType: "json",
+            data: {"ds_id": ds_id},
+            success: function (result) {
+                if (result.state == 1) {
+                    var data = result.data;
+                    var str = "<option>请选择</option>";
+                    $.each(data,function (i) {
+                        str += "<option value=" + data[i].id + ">" + data[i].value + "</option>"
+                    })
+                    $("#event_table").html(str);
+                    $("#event_table").selectpicker('refresh');
+
+                } else {
+                    alert("获取源库的表名失败！\r\n" + result.message);
+                }
+            },
+            error: function (result) {
+                alert("调用服务出错！")
+            }
+        })
+        
+    }
+
+    function fn_tabchg() {
+        var tab_name = $("#event_table").val();
+        var ds_id = $("#event_datasource").val();
+        if (tab_name == null || ds_id == null) {
+            return
+        }
+        $.ajax({
+            url: "/event/getTableCol.do", type: "post", dataType: "json",
+            data: {"tab_name": tab_name,"ds_id": ds_id},
+            success: function (result) {
+                if (result.state == 1) {
+                    $("#col_select").html("");
+                    var data = result.data;
+                    $.each(data,function (i) {
+                        var o = document.createElement("option")
+                        o.value = data[i].id;
+                        o.text = data[i].value;
+                        $("#col_select")[0].options.add(o);
+                    })
+                    $('.demo2').bootstrapDualListbox({
+                        nonSelectedListLabel: 'all-col',
+                        selectedListLabel: 'selected-col',
+                        preserveSelectionOnMove: 'moved',
+                        moveOnSelect: false,
+                        nonSelectedFilter: ''
+                    });
+                    $('.demo2').bootstrapDualListbox('refresh');
+
+                } else {
+                    alert("获取源库的表名失败！\r\n" + result.message);
+                }
+            },
+            error: function (result) {
+                alert("调用服务出错！")
+            }
+        })
+
+    }
+</script>
+
+</html>
