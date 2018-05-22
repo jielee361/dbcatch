@@ -91,6 +91,9 @@ public class EventService {
 
     public void addEvent(EventVO evo) {
         String colMsg = evo.getMsg_col();
+        if (colMsg.length()<1) {
+            colMsg = " ";
+        }
         String sql = "insert into DBC_EVENT_CFG (evt_id,evt_name,subject,classify,ds_id,tab_name,monitor_ld," +
                 "chg_type,monitor_type,chg_old,chg_new,msg_col,bizuser,biztime) values (?,?,?,?,?,?,?,?,?,?,?,?," +
                 "'sys',sysdate)";

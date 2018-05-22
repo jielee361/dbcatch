@@ -154,9 +154,13 @@
         $.each(msg_col_ar,function (i) {
             msg_col += msg_col_ar[i] + ",";
         })
+        if (evt_id == null || evt_id == "") {
+            alert("事件标识不能为空！");
+            return;
+        }
 
         $.ajax({
-            type: "get", url: "/event/add.do", async: true,
+            type: "post", url: "/event/add.do", dataType: "json",
             data: {"evt_id": evt_id,"evt_name": evt_name,"subject": subject,"classify": classify,"ds_id": ds_id
                 ,"tab_name": tab_name,"monitor_ld": monitor_ld,"chg_type": chg_type,"monitor_type": monitor_type
                 ,"chg_old": chg_old,"chg_new": chg_new,"msg_col": msg_col},
