@@ -2,9 +2,9 @@ package com.yinhai.dbcatch.engine;
 
 import com.yinhai.dbcatch.po.EventMsgQueue;
 import com.yinhai.dbcatch.po.ReadMsg;
+import com.yinhai.dbcatch.util.AppContextUtil;
 import com.yinhai.dbcatch.util.CommonConn;
 import com.yinhai.dbcatch.util.DbcCost;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.sql.Connection;
@@ -19,7 +19,6 @@ import java.util.concurrent.LinkedBlockingDeque;
 
 public class OraReadExecutor implements ReadExecutor {
 
-    @Autowired
     private JdbcTemplate jdbcTemplate;
 
     private List<Map<String, Object>> events;
@@ -28,20 +27,21 @@ public class OraReadExecutor implements ReadExecutor {
     private Map<String,Long> tabMlogSeq;
     private boolean stopFlag = false;
     private LinkedBlockingDeque<ReadMsg> msgQuue;
-
-    public void init(int dsId) throws Exception {
+    @Override
+    public void init(String dsId) throws Exception {
+        jdbcTemplate = AppContextUtil.getBean(JdbcTemplate.class);
         msgQuue = EventMsgQueue.getQueue();
         //get all ds event
         events = jdbcTemplate.queryForList("select * from DBC_EVENT_CFG where ds_id = " + dsId);
         dsInfo = jdbcTemplate.queryForMap("select * from DBC_SOURCE_DATABASE where ds_id = " + dsId);
         //check source cfg
         Connection conn = CommonConn.getOraConnection(dsInfo.get("ds_url").toString() ,
-                dsInfo.get("ds_username").toString(), dsInfo.get("ds_passwork").toString());
+                dsInfo.get("ds_username").toString(), dsInfo.get("ds_password").toString());
         Statement st = conn.createStatement();
         //get pk
         String tables = "";
         for (Map<String, Object> event : events) {
-            tables = tables + event.get("tab_name").toString() + ",";
+            tables = tables + "'"+event.get("tab_name").toString() + "',";
         }
         if (tables.length() < 2 ) {
             throw new Exception("未获取到任何已配置的事件！");
@@ -63,10 +63,13 @@ public class OraReadExecutor implements ReadExecutor {
         //create mlog
         for (Map<String, Object> event : events) {
             String tableName = event.get("tab_name").toString();
-            List<Map<String, Object>> evtseq = jdbcTemplate.queryForList("select * from DBC_EVENT_SEQ where event_id = "
-                    + event.get("evt_id").toString());
+            List<Map<String, Object>> evtseq = jdbcTemplate.queryForList("select * from DBC_EVENT_SEQ where evt_id = '"
+                    + event.get("evt_id").toString() + "'");
             if (evtseq.size() == 0) {//如果第一此启动，要创建MLOG
                 List<String> pkl = pkMap.get(tableName);
+                if (pkl == null) {
+                    throw new Exception("未获取到此表的主键:" + tableName);
+                }
                 String mlogCols = event.get("msg_col").toString();
                 for (String pk : pkl) {//主键不能包含在创建MLOG的字段中
                     mlogCols = mlogCols.replace(pk + ",","").replace("," + pk,"");
@@ -91,16 +94,16 @@ public class OraReadExecutor implements ReadExecutor {
         conn.close();
     }
     @Override
-    public void startRead() {
+    public void startRead() throws Exception {
         Connection conn = null;
         try {
             conn = CommonConn.getOraConnection(dsInfo.get("ds_url").toString() ,
-                    dsInfo.get("ds_username").toString(), dsInfo.get("ds_passwork").toString());
+                    dsInfo.get("ds_username").toString(), dsInfo.get("ds_password").toString());
             Statement st = conn.createStatement();
             st.setFetchSize(500);
             int getNum;
             Long seq = 0L;
-            while (stopFlag) {
+            while (!stopFlag) {
                 getNum = 0;
                 for (Map<String, Object> event : events) {
                     seq = 0L;
@@ -120,19 +123,23 @@ public class OraReadExecutor implements ReadExecutor {
                         readMsg.setColValue(colValues);
                         //放入队列
                         msgQuue.add(readMsg);
+                        System.out.println(readMsg.toString());
                         getNum ++;
                     }
+                    rs.close();
                     if (seq > 0L) {
                         tabMlogSeq.put(tabName,seq);
                     }
 
                 }
                 if (getNum == 0) {
+                    System.out.println("stop 3 second");
                     Thread.sleep(3000);
                 }
 
             }
         }catch (Exception e) {
+            throw e;
 
         }finally {
             if (conn != null) {
@@ -149,6 +156,7 @@ public class OraReadExecutor implements ReadExecutor {
     }
 
     public void stopRead() {
-
+        this.stopFlag = true;
     }
+
 }

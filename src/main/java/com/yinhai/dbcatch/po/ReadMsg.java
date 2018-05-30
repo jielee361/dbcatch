@@ -21,4 +21,16 @@ public class ReadMsg {
     public void setColValue(List<String> colValue) {
         this.colValue = colValue;
     }
+
+    @Override
+    public String toString() {
+        String cols = "";
+        for (String s : colValue) {
+            cols = cols + s +",";
+        }
+        return "ReadMsg{" +
+                "tabName='" + tabName + '\'' +
+                ", colValue=" + cols +
+                '}';
+    }
 }
