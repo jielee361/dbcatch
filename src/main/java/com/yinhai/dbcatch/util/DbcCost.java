@@ -10,6 +10,8 @@ public interface DbcCost {
     String MLOG_GET_SQL = "select sequence$$,dmltype$$,old_new$$,%s from MLOG$_%s where sequence$$ > %s order by sequence$$";
     String MLOG_DELETE_SQL = "delete from %s.MLOG$_%s where sequence$$ <= %s";
 
+    String UPADTE_STAT_SQL = "update DBC_SOURCE_DATABASE set run_stat=?,run_time=sysdate,run_log=? where ds_id=?";
+
     String DS_TYPE_ORACLE = "1";
     String DS_TYPE_MYSQL = "2";
 

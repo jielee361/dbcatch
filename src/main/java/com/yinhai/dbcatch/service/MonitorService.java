@@ -28,4 +28,8 @@ public class MonitorService {
         runService.start(dsvo.getDs_id());
     }
 
+    public void stopRun(DatasourceVO dsvo) throws Exception {
+        runService.stop(dsvo.getDs_id());
+    }
+
 }

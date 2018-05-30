@@ -38,4 +38,18 @@ public class MonitorController {
         }
     }
 
+    @RequestMapping("/MonitorController/stopRun")
+    @ResponseBody
+    public ResultVO stopRun(DatasourceVO dsvo) {
+        try {
+            monitorService.stopRun(dsvo);
+            return new ResultVO("success");
+        }catch (Exception e) {
+            e.printStackTrace();
+            return new ResultVO(e);
+        }
+    }
+
+
+
 }
