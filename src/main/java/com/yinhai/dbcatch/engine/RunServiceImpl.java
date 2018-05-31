@@ -1,7 +1,7 @@
 package com.yinhai.dbcatch.engine;
 
 import com.yinhai.dbcatch.util.DbcCost;
-import com.yinhai.dbcatch.util.ThreadPoolUtil;
+import com.yinhai.dbcatch.util.DbcEnv;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -12,7 +12,6 @@ import java.util.Map;
 public class RunServiceImpl implements RunService {
 
     private static Map<String,ReadRunnable> readThreadMap;
-    private static ThreadPoolUtil threadPool;
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
@@ -22,9 +21,6 @@ public class RunServiceImpl implements RunService {
     public void start(String dsId) throws Exception {
         if (readThreadMap == null) {
             readThreadMap = new HashMap<>();
-        }
-        if (threadPool == null) {
-            threadPool = ThreadPoolUtil.getThreadPool(8);
         }
         // start read
         if (readThreadMap.containsKey(dsId) ) {
@@ -54,7 +50,7 @@ public class RunServiceImpl implements RunService {
         readExecutor.init(dsId);
         jdbcTemplate.update(DbcCost.UPADTE_STAT_SQL,2,"已启动",Integer.valueOf(dsId));
         ReadRunnable readRunnable = new ReadRunnable(readExecutor);
-        threadPool.submit("DBCATCH-" + dsId,readRunnable);
+        DbcEnv.getThreadPool().submit("DBCATCH-" + dsId,readRunnable);
         readThreadMap.put(dsId,readRunnable);
     }
 }

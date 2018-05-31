@@ -1,11 +1,13 @@
 package com.yinhai.dbcatch.po;
 
+import com.alibaba.fastjson.JSONObject;
+
 import java.util.concurrent.LinkedBlockingDeque;
 
 public class EventMsgQueue {
-    private static LinkedBlockingDeque<ReadMsg> msgQuue;
+    private static LinkedBlockingDeque<JSONObject> msgQuue;
 
-    public static LinkedBlockingDeque<ReadMsg> getQueue() {
+    public static LinkedBlockingDeque<JSONObject> getQueue() {
         if (msgQuue == null) {
             msgQuue = new LinkedBlockingDeque<>();
         }

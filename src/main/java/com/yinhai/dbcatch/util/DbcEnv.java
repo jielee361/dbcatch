@@ -11,7 +11,7 @@ public class DbcEnv {
 
     public static ThreadPoolUtil getThreadPool() {
         if (threadPool == null) {
-            threadPool = ThreadPoolUtil.getThreadPool(8);
+            threadPool = ThreadPoolUtil.getThreadPool(DbcUtil.getIntPrp("thread.pool.size"));
         }
         return threadPool;
     }
