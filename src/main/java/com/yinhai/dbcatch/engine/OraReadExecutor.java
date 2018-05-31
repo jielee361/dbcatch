@@ -27,8 +27,10 @@ public class OraReadExecutor implements ReadExecutor {
     private Map<String,Long> tabMlogSeq;
     private boolean stopFlag = false;
     private LinkedBlockingDeque<ReadMsg> msgQuue;
+    private int dsId;
     @Override
     public void init(String dsId) throws Exception {
+        this.dsId = Integer.valueOf(dsId);
         jdbcTemplate = AppContextUtil.getBean(JdbcTemplate.class);
         msgQuue = EventMsgQueue.getQueue();
         //get all ds event
@@ -93,6 +95,12 @@ public class OraReadExecutor implements ReadExecutor {
         st.close();
         conn.close();
     }
+
+    @Override
+    public void updateStat(int stat, String runLog) {
+        jdbcTemplate.update(DbcCost.UPADTE_STAT_SQL,stat,runLog,Integer.valueOf(dsId));
+    }
+
     @Override
     public void startRead() throws Exception {
         Connection conn = null;
@@ -123,7 +131,7 @@ public class OraReadExecutor implements ReadExecutor {
                         readMsg.setColValue(colValues);
                         //放入队列
                         msgQuue.add(readMsg);
-                        System.out.println(readMsg.toString());
+                        System.out.println("抓取到："+ readMsg.toString());
                         getNum ++;
                     }
                     rs.close();

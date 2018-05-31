@@ -32,4 +32,11 @@ public class MonitorService {
         runService.stop(dsvo.getDs_id());
     }
 
+    public String getLog(DatasourceVO dsvo) {
+        Map<String, Object> logMap = jdbcTemplate.queryForMap("select ds_id,run_log from DBC_SOURCE_DATABASE where ds_id="
+                + dsvo.getDs_id());
+        return logMap.get("run_log").toString();
+
+    }
+
 }

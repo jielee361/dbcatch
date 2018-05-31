@@ -8,10 +8,13 @@
     <title>SetDataSource</title>
     <!--Bootstrap-->
     <link th:href="@{/Bootstrap/bootstrap/css/bootstrap.min.css}" rel="stylesheet"/>
+    <link th:href="@{/Bootstrap/toastr/toastr.css}" rel="stylesheet"/>
 
     <script th:src="@{/js/jquery-3.3.1.min.js}"></script>
     <script th:src="@{/Bootstrap/bootstrap/js/bootstrap.min.js}"></script>
     <script th:src="@{/Bootstrap/bootstrap/js/bootstrap-tab.js}"></script>
+    <script th:src="@{/Bootstrap/toastr/toastr.min.js}"></script>
+    <script th:src="@{/js/alertme.js}"></script>
 </head>
 <body>
 <div class="container">
@@ -50,17 +53,17 @@
                     <tbody>
                     <!--/*@thymesVar id="dslist" type="java"*/-->
                     <tr th:each="row : ${evtlist}">
-                        <td th:text="${row.evt_id}"></td>
-                        <td th:text="${{row.evt_name}}"></td>
-                        <td th:text="${{row.subject}}"></td>
-                        <td th:text="${{row.classify}}"></td>
-                        <td th:text="${{row.ds_name}}"></td>
-                        <td th:text="${{row.tab_name}}"></td>
-                        <td th:text="${{row.monitor_ld_desc}}"></td>
-                        <td th:text="${{row.monitor_type_desc}}"></td>
-                        <td th:text="${{row.chg_type_desc}}"></td>
-                        <td th:text="${{row.bizuser}}"></td>
-                        <td th:text="${{row.biztime}}"></td>
+                        <td data-th-text="${row.evt_id}"></td>
+                        <td data-th-text="${row.evt_name}"></td>
+                        <td data-th-text="${row.subject}"></td>
+                        <td data-th-text="${row.classify}"></td>
+                        <td data-th-text="${row.ds_name}"></td>
+                        <td data-th-text="${row.tab_name}"></td>
+                        <td data-th-text="${row.monitor_ld_desc}"></td>
+                        <td data-th-text="${row.monitor_type_desc}"></td>
+                        <td data-th-text="${row.chg_type_desc}"></td>
+                        <td data-th-text="${row.bizuser}"></td>
+                        <td data-th-text="${row.biztime}"></td>
                         <td width="180px">
                             <button class="btn btn-default" type="button" name="options4" id="bt_update"
                                     onclick="return fn_updateevt(this)"> 编辑
@@ -79,34 +82,46 @@
 
 </body>
 <script type="text/javascript">
+    $(function () {
+        toastr.options = {
+            positionClass: "toast-top-full-width"
+        };
+    })
+
     function fn_deleteevt(delo) {
         var ps = $(delo).parent().siblings();
         var evt_id = ps[0].innerHTML;
-        $.ajax({
-            url: "/event/delete.do", type: "post", dataType: "json",
-            data: {"evt_id": evt_id},
-            success: function (result) {
-                if (result.state == 1) {
-                    alert("删除成功！");
-                    window.location.reload();
-                } else {
-                    alert("删除失败！\r\n" + result.message);
-                }
-            },
-            error: function (result) {
-                alert("调用服务出错！")
+        Ewin.confirm({message: '确认删除此事件?'}).on(function (r) {
+            if (!r) {
+                return;
             }
+            $.ajax({
+                url: "/event/delete.do", type: "post", dataType: "json",
+                data: {"evt_id": evt_id},
+                success: function (result) {
+                    if (result.state == 1) {
+                        Ewin.confirm({message: '删除成功!'}).on(function (r) {
+                            window.location.reload();
+                        });
+                    } else {
+                        toastr.error("删除失败！\r\n" + result.message);
+                    }
+                },
+                error: function (result) {
+                    toastr.error("调用服务出错！")
+                }
+            });
         })
     }
 
     function fn_addEvent() {
         addTabs({
-            id:'11',
-            title:'新增事件',
-            close:true,
-            url:'/event/listEvent'
+            id: '11',
+            title: '新增事件',
+            close: true,
+            url: '/event/listEvent'
         })
-        
+
     }
 
     function fn_select() {

@@ -50,6 +50,18 @@ public class MonitorController {
         }
     }
 
+    @RequestMapping("/MonitorController/getLog")
+    @ResponseBody
+    public ResultVO getLog(DatasourceVO dsvo) {
+        try {
+            String log = monitorService.getLog(dsvo);
+            return new ResultVO(log);
+        }catch (Exception e) {
+            e.printStackTrace();
+            return new ResultVO(e);
+        }
+    }
+
 
 
 }

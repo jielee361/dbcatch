@@ -52,7 +52,7 @@ public class RunServiceImpl implements RunService {
     private void startRead(String dsId) throws Exception {
         ReadExecutor readExecutor = new OraReadExecutor();
         readExecutor.init(dsId);
-        jdbcTemplate.update(DbcCost.UPADTE_STAT_SQL,2,"",Integer.valueOf(dsId));
+        jdbcTemplate.update(DbcCost.UPADTE_STAT_SQL,2,"已启动",Integer.valueOf(dsId));
         ReadRunnable readRunnable = new ReadRunnable(readExecutor);
         threadPool.submit("DBCATCH-" + dsId,readRunnable);
         readThreadMap.put(dsId,readRunnable);

@@ -1,5 +1,6 @@
 package com.yinhai.dbcatch.engine;
 
+
 public class ReadRunnable implements Runnable {
     private ReadExecutor readExecutor;
     private boolean isRunning = false;
@@ -28,6 +29,7 @@ public class ReadRunnable implements Runnable {
         }catch (Exception e) {
             isRunning = false;
             e.printStackTrace();
+            readExecutor.updateStat(4,e.getMessage());
 
         }
 

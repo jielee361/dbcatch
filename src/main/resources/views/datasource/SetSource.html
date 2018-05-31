@@ -22,6 +22,7 @@
     <script th:src="@{/Bootstrap/bootstrap-select/dist/js/bootstrap-select.min.js}"></script>
     <script th:src="@{/Bootstrap/bootstrap-select/dist/js/i18n/defaults-zh_CN.min.js}"></script>
     <script th:src="@{/Bootstrap/toastr/toastr.min.js}"></script>
+    <script th:src="@{/js/alertme.js}"></script>
 </head>
 <body>
 <div class="container">
@@ -56,16 +57,18 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <!--/*@thymesVar id="dslist" type="java"*/-->
                     <tr th:each="row : ${dslist}">
-                        <td th:text="${row.ds_id}"></td>
-                        <td th:text="${{row.ds_name}}"></td>
-                        <td th:text="${{row.ds_type}}"></td>
-                        <td th:text="${{row.ds_url}}"></td>
-                        <td th:text="${{row.ds_username}}"></td>
-                        <td th:text="${{row.ds_password}}" style="display: none"></td>
-                        <td th:text="${{row.bizuser}}"></td>
-                        <td th:text="${{row.biztime}}"></td>
+                        <td data-th-text="${row.ds_id}"></td>
+                        <td data-th-text="${{row.ds_name}}"></td>
+                        <td data-th-switch="${row.ds_type}">
+                            <p data-th-case="1">ORACLE</p>
+                            <p data-th-case="2">MYSQL</p>
+                        </td>
+                        <td data-th-text="${{row.ds_url}}"></td>
+                        <td data-th-text="${{row.ds_username}}"></td>
+                        <td data-th-text="${{row.ds_password}}" style="display: none"></td>
+                        <td data-th-text="${{row.bizuser}}"></td>
+                        <td data-th-text="${{row.biztime}}"></td>
                         <td width="180px">
                             <button class="btn btn-default" type="button" name="options4" id="bt_update"
                                     onclick="return fn_updatedb(this)"> 修改库
@@ -102,8 +105,8 @@
                         <label class="col-sm-2 control-label" for="db_type">源库类型</label>
                         <div class="col-lg-10">
                             <select id="db_type" class="form-control">
-                                <option th:value="1" th:text="OARCLE"></option>
-                                <option th:value="2" th:text="MYSQL"></option>
+                                <option th:value="1" data-th-text="OARCLE"></option>
+                                <option th:value="2" data-th-text="MYSQL"></option>
                             </select>
                         </div>
                     </div>
@@ -136,24 +139,36 @@
 </div>
 </body>
 <script type="text/javascript">
+    $(function () {
+        toastr.options = {
+            positionClass: "toast-top-full-width"
+        };
+
+    })
+
     function fn_deletedb(deldb) {
         var ps = $(deldb).parent().siblings();
         var ds_id = ps[0].innerHTML;
-        $.ajax({
-            url: "/datasource/deleteDb.do", type: "post", dataType: "json",
-            data: {"ds_id": ds_id},
-            success: function (result) {
-                if (result.state == 1) {
-                    //toastr.success("删除成功！")
-                    alert("删除成功！");
-                    window.location.reload();
-                } else {
-                    alert("删除失败！\r\n" + result.message);
-                }
-            },
-            error: function (result) {
-                alert("调用服务出错！")
+        Ewin.confirm({ message: '确认删除此数据源?'}).on(function (r) {
+            if (!r) {
+                return;
             }
+            $.ajax({
+                url: "/datasource/deleteDb.do", type: "post", dataType: "json",
+                data: {"ds_id": ds_id},
+                success: function (result) {
+                    if (result.state == 1) {
+                        Ewin.confirm({ message: '删除成功!'}).on(function (r) {
+                            window.location.reload();
+                        });
+                    } else {
+                        toastr.error("删除失败！\r\n" + result.message);
+                    }
+                },
+                error: function (result) {
+                    toastr.error("调用服务出错！")
+                }
+            })
         })
     }
 
@@ -172,13 +187,13 @@
             success: function (result) {
                 if (result.state == 1) {
                     //toastr.success("新增成功！");
-                    alert("新增成功！");
+                    toastr.success("新增成功！");
                 } else {
-                    alert("新增失败！\r\n" + result.message)
+                    toastr.error("新增失败！\r\n" + result.message)
                 }
             },
             error: function (result) {
-                alert("调用服务出错！")
+                toastr.error("调用服务出错！")
             }
         })
     }
