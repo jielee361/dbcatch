@@ -43,6 +43,17 @@ public class RunServiceImpl implements RunService {
         if (readThreadMap.containsKey(dsId)) {
             readThreadMap.get(dsId).stopRun();
             jdbcTemplate.update(DbcCost.UPADTE_STAT_SQL,3,"正常停止",Integer.valueOf(dsId));
+
+
+            boolean isAllDown = true;
+            for (String dsid : readThreadMap.keySet()) {
+                if (readThreadMap.get(dsid).isRunning()) {
+                    isAllDown = false;
+                }
+            }
+            if (isAllDown) {
+                sendRunnable.stopSend();
+            }
         }
     }
 
