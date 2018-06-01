@@ -2,6 +2,7 @@ package com.yinhai.dbcatch.engine;
 
 import com.alibaba.fastjson.JSONObject;
 import com.yinhai.dbcatch.util.DbcCost;
+import com.yinhai.dbcatch.util.DbcEnv;
 import com.yinhai.dbcatch.util.DbcUtil;
 import com.yinhai.dbcatch.vo.EventVO;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -47,6 +48,7 @@ public class KafkaSendExecutor extends SendExecutor {
                         //send
                         chgMsg.put("evtId",tabEvent.getEvt_id());
                         producer.send(new ProducerRecord<>(topic,fullTab,chgMsg.toJSONString())).get();
+                        DbcEnv.getCatchNum().put(chgMsg.getString("dsId"),DbcEnv.getCatchNum().get(chgMsg.getString("dsId")) + 1) ;
                         System.out.println("已发送："+ chgMsg.toJSONString());
 
                     }

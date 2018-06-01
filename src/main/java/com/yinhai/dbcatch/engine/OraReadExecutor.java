@@ -6,6 +6,7 @@ import com.yinhai.dbcatch.po.ReadMsg;
 import com.yinhai.dbcatch.util.AppContextUtil;
 import com.yinhai.dbcatch.util.CommonConn;
 import com.yinhai.dbcatch.util.DbcCost;
+import com.yinhai.dbcatch.util.DbcEnv;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.sql.Connection;
@@ -34,6 +35,7 @@ public class OraReadExecutor implements ReadExecutor {
 
     @Override
     public void init(String dsId) throws Exception {
+        DbcEnv.getCatchNum().put(dsId,0);
         this.dsId = Integer.valueOf(dsId);
         jdbcTemplate = AppContextUtil.getBean(JdbcTemplate.class);
         msgQuue = EventMsgQueue.getQueue();
@@ -106,7 +108,7 @@ public class OraReadExecutor implements ReadExecutor {
                 for (int k = 0; k < mlogA.length; k++) {
                     mlogL.add(mlogA[k]);
                 }
-                if (!colsL.containsAll(mlogL)) { //有新增字段
+                if (!mlogL.containsAll(colsL)) { //有新增字段
                     createMlog(tname,colsStr,conn);
                     jdbcTemplate.update("UPDATE DBC_EVENT_SEQ set mlog_cols=? where ds_id=? and tab_name=?",
                             colsStr,this.dsId,tname);
@@ -158,6 +160,9 @@ public class OraReadExecutor implements ReadExecutor {
             int getNum;
             Long seq = 0L;
             List<String> cosList;
+            String opType;
+            String oldnew;
+            JSONObject oldColJson = null;
             while (!stopFlag) {
                 getNum = 0;
                 for (String tabName : colsMap.keySet()) {
@@ -171,14 +176,28 @@ public class OraReadExecutor implements ReadExecutor {
                         rowJson.put("dsId",this.dsId);
                         rowJson.put("tabName",tabName);
                         seq = rs.getLong(1);
+                        opType = rs.getString(2);
+                        oldnew = rs.getString(3);
                         rowJson.put("seq",seq);
-                        rowJson.put("opType",rs.getString(2));
-                        rowJson.put("oldnew",rs.getString(3));
+                        rowJson.put("opType",opType);
+                        //rowJson.put("oldnew",oldnew);
                         JSONObject colJson = new JSONObject(cosList.size());
                         for (int i = 4; i <= colSize; i++) {
                             colJson.put(cosList.get(i - 4),rs.getString(i));
                         }
-                        rowJson.put("after",colJson);
+                        if (opType.equals("I")) {
+                            rowJson.put("after",colJson);
+                        }else if (opType.equals("U")){
+                            if (oldnew.equals("N")) {
+                                rowJson.put("before",oldColJson);
+                                rowJson.put("after",colJson);
+                            }else {
+                                oldColJson = colJson;
+                                continue;
+                            }
+                        }else {
+                            rowJson.put("before",colJson);
+                        }
                         //放入队列
                         msgQuue.add(rowJson);
                         System.out.println("抓取到：" + rowJson.toJSONString());
