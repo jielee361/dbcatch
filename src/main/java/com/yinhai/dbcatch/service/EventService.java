@@ -125,7 +125,6 @@ public class EventService {
 
     public void deleteEvent(EventVO evo) {
         JdbcTemplate.update("delete from DBC_EVENT_CFG where evt_id = ?", evo.getEvt_id());
-        JdbcTemplate.update("delete from DBC_EVENT_SEQ where evt_id = ?", evo.getEvt_id());
 
     }
 }

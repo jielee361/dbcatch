@@ -12,6 +12,7 @@ import java.util.Map;
 public class RunServiceImpl implements RunService {
 
     private static Map<String,ReadRunnable> readThreadMap;
+    private static SendRunnable sendRunnable;
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
@@ -50,7 +51,18 @@ public class RunServiceImpl implements RunService {
         readExecutor.init(dsId);
         jdbcTemplate.update(DbcCost.UPADTE_STAT_SQL,2,"已启动",Integer.valueOf(dsId));
         ReadRunnable readRunnable = new ReadRunnable(readExecutor);
-        DbcEnv.getThreadPool().submit("DBCATCH-" + dsId,readRunnable);
+        DbcEnv.getThreadPool().submit("DBCREAD-" + dsId,readRunnable);
         readThreadMap.put(dsId,readRunnable);
+
+        //start send if need
+        if (sendRunnable != null && sendRunnable.isRunning()) {
+            return;
+        }
+        SendExecutor sendExecutor = new KafkaSendExecutor();
+        sendExecutor.init();
+        SendRunnable senone = new SendRunnable(sendExecutor);
+        DbcEnv.getThreadPool().submit("DBCSEND-ONE",senone);
+        sendRunnable = senone;
+
     }
 }

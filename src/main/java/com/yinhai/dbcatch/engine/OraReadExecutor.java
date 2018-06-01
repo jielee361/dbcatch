@@ -167,7 +167,7 @@ public class OraReadExecutor implements ReadExecutor {
                             tabName, tabMlogSeq.get(tabName)));
                     int colSize = cosList.size() + 3;
                     while (rs.next()) {
-                        JSONObject rowJson = new JSONObject(6);
+                        JSONObject rowJson = new JSONObject(8);
                         rowJson.put("dsId",this.dsId);
                         rowJson.put("tabName",tabName);
                         seq = rs.getLong(1);
@@ -178,7 +178,7 @@ public class OraReadExecutor implements ReadExecutor {
                         for (int i = 4; i <= colSize; i++) {
                             colJson.put(cosList.get(i - 4),rs.getString(i));
                         }
-                        rowJson.put("cols",colJson);
+                        rowJson.put("after",colJson);
                         //放入队列
                         msgQuue.add(rowJson);
                         System.out.println("抓取到：" + rowJson.toJSONString());

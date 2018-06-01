@@ -7,7 +7,7 @@ import java.util.concurrent.LinkedBlockingDeque;
 public class EventMsgQueue {
     private static LinkedBlockingDeque<JSONObject> msgQuue;
 
-    public static LinkedBlockingDeque<JSONObject> getQueue() {
+    public static synchronized LinkedBlockingDeque<JSONObject> getQueue() {
         if (msgQuue == null) {
             msgQuue = new LinkedBlockingDeque<>();
         }

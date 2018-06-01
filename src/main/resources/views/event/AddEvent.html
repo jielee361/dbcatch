@@ -105,7 +105,7 @@
     </div>
     <div class="form-group" style="width: 800px;">
         <div class="text-center" style="padding: 15px;">
-            <button type="button" class="btn btn-default" onclick="fn_submit()">关闭</button>
+            <button id="bt_close" type="button" class="btn btn-default">关闭</button>
             <button type="button" class="btn btn-success" onclick="fn_submit()">保存</button>
         </div>
     </div>
@@ -124,8 +124,12 @@
         document.getElementById("fg-col-chg").style.display = "none"
         //document.getElementById("fg-chg-type").style.display = "none";
         getDsOption();
+        $("#bt_close").onclick(function (e) {
+            closeTab('tab_11');
+        });
 
     });
+
 
     function fn_eventLdChg(obj) {
         if (obj.selectedOptions.item(0).value == 1) {
