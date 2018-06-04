@@ -127,4 +127,9 @@ public class EventService {
         JdbcTemplate.update("delete from DBC_EVENT_CFG where evt_id = ?", evo.getEvt_id());
 
     }
+
+    public List<Map<String, Object>>  getEventById(EventVO evo) {
+        return JdbcTemplate.queryForList("select * from DBC_EVENT_CFG where evt_id=?", evo.getEvt_id());
+
+    }
 }

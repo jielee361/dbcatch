@@ -51,6 +51,22 @@ public class DataSourceController {
             e.printStackTrace();
             return new ResultVO(e);
         }
-
     }
+
+    @RequestMapping("/datasource/getEventByDs")
+    @ResponseBody
+    public ResultVO getEventByDs(DatasourceVO dsvo) {
+        try {
+            int evtNum = dataSourceService.getEventByDs(dsvo);
+            if (evtNum > 0) {
+                return new ResultVO("0");
+            }else {
+                return new ResultVO("1");
+            }
+        }catch (Exception e) {
+            e.printStackTrace();
+            return new ResultVO(e);
+        }
+    }
+
 }

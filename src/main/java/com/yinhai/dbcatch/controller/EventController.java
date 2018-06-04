@@ -97,6 +97,22 @@ public class EventController {
         }
     }
 
+    @RequestMapping("/event/getEventById")
+    @ResponseBody
+    public ResultVO getEventById(EventVO evo) {
+        try {
+            List<Map<String, Object>> eventById = eventService.getEventById(evo);
+            if (eventById.size() > 0) {
+                return new ResultVO("0");
+            }else {
+                return new ResultVO("1");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResultVO(e);
+        }
+    }
 
 
 }

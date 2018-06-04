@@ -10,6 +10,8 @@
     <link th:href="@{/Bootstrap/bootstrap/css/bootstrap.min.css}" rel="stylesheet"/>
     <link th:href="@{/Bootstrap/bootstrap-select/dist/css/bootstrap-select.min.css}" rel="stylesheet"/>
     <link th:href="@{/Bootstrap/bootstrap-duallistbox/dist/bootstrap-duallistbox.min.css}" rel="stylesheet"/>
+    <link th:href="@{/Bootstrap/bootstrapValidator/bootstrapValidator.min.css}" rel="stylesheet"/>
+    <link th:href="@{/Bootstrap/toastr/toastr.css}" rel="stylesheet"/>
 
     <script th:src="@{/js/jquery-3.3.1.min.js}"></script>
     <script th:src="@{/Bootstrap/bootstrap/js/bootstrap.min.js}"></script>
@@ -17,22 +19,24 @@
     <script th:src="@{/Bootstrap/bootstrap-select/dist/js/bootstrap-select.min.js}"></script>
     <script th:src="@{/Bootstrap/bootstrap-select/dist/js/i18n/defaults-zh_CN.min.js}"></script>
     <script th:src="@{/Bootstrap/bootstrap-duallistbox/dist/jquery.bootstrap-duallistbox.min.js}"></script>
+    <script th:src="@{/Bootstrap/bootstrapValidator/bootstrapValidator.min.js}"></script>
+    <script th:src="@{/Bootstrap/toastr/toastr.min.js}"></script>
 </head>
 <body>
-<form class="form-horizontal" role="form">
+<form class="form-horizontal" role="form" id="addform">
     <div id="legend" class="">
         <legend class="">配置事件</legend>
     </div>
     <div class="form-group">
         <label class="col-sm-2 control-label">事件标识</label>
         <div class="col-sm-10">
-            <input id="event_id" type="text" placeholder="英文或数字" class="input-xlarge"/>
+            <input id="event_id" name="eventid" type="text" placeholder="英文或数字" class="input-xlarge"/>
         </div>
     </div>
     <div class="form-group">
         <label class="col-sm-2 control-label">事件名称</label>
         <div class="col-sm-10">
-            <input id="event_name" type="text" placeholder="" class="input-xlarge"/>
+            <input id="event_name" name="eventname" type="text" placeholder="" class="input-xlarge"/>
         </div>
     </div>
     <div class="form-group">
@@ -54,7 +58,7 @@
             <select id="event_datasource" class="selectpicker" onchange="fn_dschg()">
 
             </select>&nbsp;
-            <select id="event_table" class="selectpicker" onchange="fn_tabchg()">
+            <select id="event_table" name="eventtable" class="selectpicker" onchange="fn_tabchg()">
 
             </select>
         </div>
@@ -98,7 +102,7 @@
     <div class="form-group">
         <label class="col-sm-2 control-label">事件消息内容</label>
         <div class="col-sm-10" style="width: 500px;">
-            <select id="col_select" multiple="multiple" class="demo2">
+            <select id="col_select" name="colselect" multiple="multiple" class="demo2">
 
             </select>
         </div>
@@ -106,7 +110,7 @@
     <div class="form-group" style="width: 800px;">
         <div class="text-center" style="padding: 15px;">
             <button id="bt_close" type="button" class="btn btn-default">关闭</button>
-            <button type="button" class="btn btn-success" onclick="fn_submit()">保存</button>
+            <button type="submit" class="btn btn-success" onclick="fn_submit()">保存</button>
         </div>
     </div>
 </form>
@@ -121,12 +125,62 @@
         //     nonSelectedFilter: ''
         // });
 
+        toastr.options = {
+            positionClass: "toast-top-full-width"
+        };
+
         document.getElementById("fg-col-chg").style.display = "none"
         //document.getElementById("fg-chg-type").style.display = "none";
         getDsOption();
-        $("#bt_close").onclick(function (e) {
-            closeTab('tab_11');
-        });
+
+        //表单验证
+        $('#addform').bootstrapValidator({
+            message: 'This value is not valid',
+            feedbackIcons: {
+                valid: 'glyphicon glyphicon-ok',
+                invalid: 'glyphicon glyphicon-remove',
+                validating: 'glyphicon glyphicon-refresh'
+            },
+            fields: {
+                eventid: {
+                    validators: {
+                        notEmpty: {
+                            message: '不能为空！'
+                        },
+                        stringLength: {
+                            min: 3,
+                            max: 10,
+                            message: '长度要3到10个字符'
+                        },
+                        regexp: {
+                            regexp: /^[a-zA-Z0-9_\-]+$/,
+                            message: '只能包含字母、数字、下滑线和横线！'
+                        }
+                    }
+                },
+                eventname: {
+                    validators: {
+                        notEmpty: {
+                            message: '不能为空！'
+                        }
+                    }
+                },
+                colselect: {
+                    validators: {
+                        notEmpty: {
+                            message: '不能为空！'
+                        }
+                    }
+                },
+                eventtable: {
+                    validators: {
+                        notEmpty: {
+                            message: '不能为空！'
+                        }
+                    }
+                }
+            }
+        })
 
     });
 
@@ -142,6 +196,11 @@
     }
 
     function fn_submit() {
+        var bootstrapValidator = $("#addform").data('bootstrapValidator');
+        bootstrapValidator.validate();
+        if (!bootstrapValidator.isValid()) {
+            return;
+        }
         var evt_id = $('#event_id').val()
         var evt_name = $('#event_name').val()
         var subject = $("#subject").val()
@@ -158,11 +217,30 @@
         $.each(msg_col_ar,function (i) {
             msg_col += msg_col_ar[i] + ",";
         })
-        if (evt_id == null || evt_id == "") {
-            alert("事件标识不能为空！");
-            return;
-        }
 
+        //查看是否有重复的事件标识
+        var bestop = false;
+        $.ajax({
+            url: "/event/getEventById.do", type: "post", dataType: "json",
+            data: {"evt_id": evt_id},async: false,
+            success: function (result) {
+                if (result.state == 1) {
+                    if (result.message == '0') {
+                        toastr.error("事件标识重复，已添加了此标识的事件！");
+                        bestop = true
+                    }
+                } else {
+                    toastr.error("获取事件失败！\r\n" + result.message);
+                }
+            },
+            error: function (result) {
+                toastr.error("调用服务出错！")
+            }
+        });
+
+        if (bestop) {
+            return
+        }
         $.ajax({
             type: "post", url: "/event/add.do", dataType: "json",
             data: {"evt_id": evt_id,"evt_name": evt_name,"subject": subject,"classify": classify,"ds_id": ds_id
@@ -170,13 +248,13 @@
                 ,"chg_old": chg_old,"chg_new": chg_new,"msg_col": msg_col},
             success: function (result) {
                 if (result.state == 1) {
-                    alert("添加事件成功!");
+                    toastr.success("添加事件成功!");
                 }else {
-                    alert("添加事件失败！\r\n" + result.message);
+                    toastr.error("添加事件失败！\r\n" + result.message);
                 }
             },
             error: function (result) {
-                alert("页面调用出错！")
+                toastr.error("页面调用出错！")
             }
 
         });

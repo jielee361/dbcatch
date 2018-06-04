@@ -35,4 +35,10 @@ public class DataSourceService {
 
     }
 
+    public int getEventByDs(DatasourceVO dsvo) {
+        List<Map<String, Object>> evts = jdbcTemplate.queryForList("select evt_id from DBC_EVENT_CFG where ds_id=?", dsvo.getDs_id());
+        return evts.size();
+
+    }
+
 }

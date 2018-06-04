@@ -15,7 +15,7 @@
 
     <script th:src="@{/js/jquery-3.3.1.min.js}"></script>
     <script th:src="@{/Bootstrap/bootstrap/js/bootstrap.min.js}"></script>
-    <script th:src="@{/Bootstrap/bootstrapValidator/js/bootstrapValidator.min.js}"></script>
+    <script th:src="@{/Bootstrap/bootstrapValidator/bootstrapValidator.min.js}"></script>
     <script th:src="@{/Bootstrap/bootstrap-datetimepicker/js/bootstrap-datetimepicker.min.js}"></script>
     <script th:src="@{/Bootstrap/bootstrap-datetimepicker/js/locales/bootstrap-datetimepicker.zh-CN.js}"></script>
     <script th:src="@{/Bootstrap/bootstrap-select/dist/js/bootstrap-select.min.js}"></script>
@@ -58,16 +58,16 @@
                     <tbody>
                     <tr th:each="row : ${dslist}">
                         <td data-th-text="${row.ds_id}"></td>
-                        <td data-th-text="${{row.ds_name}}"></td>
+                        <td data-th-text="${row.ds_name}"></td>
                         <td data-th-switch="${row.ds_type}">
                             <p data-th-case="1">ORACLE</p>
                             <p data-th-case="2">MYSQL</p>
                         </td>
-                        <td data-th-text="${{row.ds_url}}"></td>
-                        <td data-th-text="${{row.ds_username}}"></td>
-                        <td data-th-text="${{row.ds_password}}" style="display: none"></td>
-                        <td data-th-text="${{row.bizuser}}"></td>
-                        <td data-th-text="${{row.biztime}}"></td>
+                        <td data-th-text="${row.ds_url}"></td>
+                        <td data-th-text="${row.ds_username}"></td>
+                        <td data-th-text="${row.ds_password}" style="display: none"></td>
+                        <td data-th-text="${row.bizuser}"></td>
+                        <td data-th-text="${row.biztime}"></td>
                         <td width="180px">
                             <button class="btn btn-default" type="button" name="options4" id="bt_update"
                                     onclick="return fn_updatedb(this)"> 修改库
@@ -92,18 +92,18 @@
                 <h4 class="modal-title" id="myModalLabel">新增数据源配置</h4>
             </div>
             <div class="modal-header">
-                <form role="form" class="form-horizontal">
+                <form id="defaultform" role="form" class="form-horizontal">
                     <!-- has-success-->
                     <div class="form-group">
                         <label for="db_name" class="col-sm-2 control-label">源库名称</label>
                         <div class="col-sm-10">
-                            <input type="text" id="db_name" class="form-control" placeholder="请输字母和数字"/>
+                            <input type="text" id="db_name" name="dbname" class="form-control" placeholder="请输字母和数字"/>
                         </div>
                     </div>
                     <div class="form-group">
                         <label class="col-sm-2 control-label" for="db_type">源库类型</label>
                         <div class="col-lg-10">
-                            <select id="db_type" class="form-control">
+                            <select id="db_type" name="dbtype" class="form-control">
                                 <option th:value="1" data-th-text="OARCLE"></option>
                                 <option th:value="2" data-th-text="MYSQL"></option>
                             </select>
@@ -112,26 +112,26 @@
                     <div class="form-group">
                         <label for="db_url" class="col-sm-2 control-label">连接URL</label>
                         <div class="col-sm-10">
-                            <input type="text" id="db_url" class="form-control" placeholder=""/>
+                            <input name="dburl" type="text" id="db_url" class="form-control" placeholder=""/>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="db_username" class="col-sm-2 control-label">用户名</label>
+                        <label for="db_username"  class="col-sm-2 control-label">用户名</label>
                         <div class="col-sm-10">
-                            <input type="text" id="db_username" class="form-control" placeholder=""/>
+                            <input type="text" id="db_username" name="dbusername" class="form-control" placeholder=""/>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="db_password" class="col-sm-2 control-label">密码</label>
+                        <label for="db_password"  class="col-sm-2 control-label">密码</label>
                         <div class="col-sm-10">
-                            <input type="password" id="db_password" class="form-control" placeholder=""/>
+                            <input type="password" name="dbpassword" id="db_password" class="form-control" placeholder=""/>
                         </div>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-                <button type="button" class="btn btn-primary" onclick="fn_adddb()">保存</button>
+                <button id="submitdb" type="button" class="btn btn-primary" onclick="fn_adddb()">保存</button>
             </div>
         </div><!-- /.modal-content -->
     </div><!-- /.modal -->
@@ -142,14 +142,85 @@
         toastr.options = {
             positionClass: "toast-top-full-width"
         };
+        //表单验证
+        $('#defaultform').bootstrapValidator({
+            message: 'This value is not valid',
+            feedbackIcons: {
+                valid: 'glyphicon glyphicon-ok',
+                invalid: 'glyphicon glyphicon-remove',
+                validating: 'glyphicon glyphicon-refresh'
+            },
+            fields: {
+                dbname: {
+                    validators: {
+                        notEmpty: {
+                            message: '不能为空！'
+                        },
+                        stringLength: {
+                            min: 3,
+                            max: 10,
+                            message: '长度要3到10个字符'
+                        },
+                        regexp: {
+                            regexp: /^[a-zA-Z0-9_\-]+$/,
+                            message: '只能包含字母、数字、下滑线和横线！'
+                        }
+                    }
+                },
+                dburl: {
+                    validators: {
+                        notEmpty: {
+                            message: '不能为空！'
+                        }
+                    }
+                },
+                dbusername: {
+                    validators: {
+                        notEmpty: {
+                            message: '不能为空！'
+                        }
+                    }
+                },
+                dbpassword: {
+                    validators: {
+                        notEmpty: {
+                            message: '不能为空！'
+                        }
+                    }
+                }
+            }
+        })
 
     })
+
 
     function fn_deletedb(deldb) {
         var ps = $(deldb).parent().siblings();
         var ds_id = ps[0].innerHTML;
-        Ewin.confirm({ message: '确认删除此数据源?'}).on(function (r) {
+        Ewin.confirm({message: '确认删除此数据源?'}).on(function (r) {
             if (!r) {
+                return;
+            }
+            //查看是否有配置事件
+            var bestop = false;
+            $.ajax({
+                url: "/datasource/getEventByDs.do", type: "post", dataType: "json",
+                data: {"ds_id": ds_id},async: false,
+                success: function (result) {
+                    if (result.state == 1) {
+                        if (result.message == '0') {
+                            toastr.error("此源库已配置事件，不能删除！");
+                            bestop = true;
+                        }
+                    } else {
+                        toastr.error("获取源库已配置的事件失败！\r\n" + result.message);
+                    }
+                },
+                error: function (result) {
+                    toastr.error("调用服务出错！")
+                }
+            });
+            if (bestop) {
                 return;
             }
             $.ajax({
@@ -157,7 +228,7 @@
                 data: {"ds_id": ds_id},
                 success: function (result) {
                     if (result.state == 1) {
-                        Ewin.confirm({ message: '删除成功!'}).on(function (r) {
+                        Ewin.confirm({message: '删除成功!'}).on(function (r) {
                             window.location.reload();
                         });
                     } else {
@@ -172,6 +243,11 @@
     }
 
     function fn_adddb() {
+        var bootstrapValidator = $("#defaultform").data('bootstrapValidator');
+        bootstrapValidator.validate();
+        if (!bootstrapValidator.isValid()) {
+            return;
+        }
         var db_name = $("#db_name").val();
         var db_type = $("#db_type").val();
         var db_url = $("#db_url").val();
