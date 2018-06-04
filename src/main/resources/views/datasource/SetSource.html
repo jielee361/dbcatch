@@ -253,6 +253,28 @@
         var db_url = $("#db_url").val();
         var db_username = $("#db_username").val();
         var db_password = $("#db_password").val();
+        //查看是否有配置事件
+        var bestop = false;
+        $.ajax({
+            url: "/datasource/getDsByName.do", type: "post", dataType: "json",
+            data: {"ds_name": db_name},async: false,
+            success: function (result) {
+                if (result.state == 1) {
+                    if (result.message == '0') {
+                        toastr.error("数据源名称重复！");
+                        bestop = true;
+                    }
+                } else {
+                    toastr.error("获取源库已配置的事件失败！\r\n" + result.message);
+                }
+            },
+            error: function (result) {
+                toastr.error("调用服务出错！")
+            }
+        });
+        if (bestop) {
+            return;
+        }
         $.ajax({
             url: "/datasource/addDb.do", type: "post", dataType: "json",
             data: {

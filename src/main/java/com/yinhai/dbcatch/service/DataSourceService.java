@@ -41,4 +41,9 @@ public class DataSourceService {
 
     }
 
+    public List<Map<String, Object>> getDsByName(DatasourceVO dsvo) {
+        return jdbcTemplate.queryForList("select * from DBC_SOURCE_DATABASE where ds_name=?", dsvo.getDs_name());
+
+    }
+
 }

@@ -69,4 +69,22 @@ public class DataSourceController {
         }
     }
 
+    @RequestMapping("/datasource/getDsByName")
+    @ResponseBody
+    public ResultVO getDsByName(DatasourceVO dsvo) {
+        try {
+            List<Map<String, Object>> dsByName = dataSourceService.getDsByName(dsvo);
+            if (dsByName.size() > 0) {
+                return new ResultVO("0");
+            }else {
+                return new ResultVO("1");
+            }
+        }catch (Exception e) {
+            e.printStackTrace();
+            return new ResultVO(e);
+        }
+    }
+
+
+
 }
