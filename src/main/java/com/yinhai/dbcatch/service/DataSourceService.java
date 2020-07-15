@@ -15,9 +15,10 @@ public class DataSourceService {
     private JdbcTemplate jdbcTemplate;
 
     public void addDb(DatasourceVO dsvo) {
-        String sql = "insert into dbc_source_database (ds_id,ds_name,ds_type,ds_url,ds_username," +
-                "ds_password,bizuser,biztime) values (SEQ_DBC.NEXTVAL,?,?,?,?,?,'sys',sysdate)";
-        jdbcTemplate.update(sql, dsvo.getDs_name(),
+        String sql = "insert into dbc_source_database (ds_name,ds_type,ds_url,ds_username," +
+                "ds_password,biz_user,biz_time) values (?,?,?,?,?,'admin',CURRENT_TIMESTAMP)";
+        jdbcTemplate.update(sql,
+                dsvo.getDs_name(),
                 dsvo.getDs_type(),
                 dsvo.getDs_url(),
                 dsvo.getDs_username(),
