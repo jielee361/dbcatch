@@ -35,6 +35,15 @@ public class DbcatchApplication {
         } else {
             logger.info("后台表：" + sourceDatabase + " 已存在，跳过创建！");
         }
+        //采集任务表
+        String extractJob = "DBC_EXTRACT_JOB";
+        List<Map<String, Object>> jobtalbe = jdbcTemplate.queryForList(String.format(DbInitSqlCost.FIND_TABLE_SQL, extractJob));
+        if (jobtalbe.size() == 0) {
+            jdbcTemplate.execute(DbInitSqlCost.CREATE_JOB_SQL);
+            logger.info("后台表：" + jobtalbe + " 创建成功！");
+        } else {
+            logger.info("后台表：" + jobtalbe + " 已存在，跳过创建！");
+        }
     }
 
 }

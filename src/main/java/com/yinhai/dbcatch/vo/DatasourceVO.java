@@ -7,8 +7,8 @@ public class DatasourceVO {
     private String ds_url;
     private String ds_username;
     private String ds_password;
-    private String bizuser;
-    private String biztime;
+    private String biz_user;
+    private String biz_time;
 
     public String getDs_id() {
         return ds_id;
@@ -58,20 +58,20 @@ public class DatasourceVO {
         this.ds_password = ds_password;
     }
 
-    public String getBizuser() {
-        return bizuser;
+    public String getBiz_user() {
+        return biz_user;
     }
 
-    public void setBizuser(String bizuser) {
-        this.bizuser = bizuser;
+    public void setBiz_user(String biz_user) {
+        this.biz_user = biz_user;
     }
 
-    public String getBiztime() {
-        return biztime;
+    public String getBiz_time() {
+        return biz_time;
     }
 
-    public void setBiztime(String biztime) {
-        this.biztime = biztime;
+    public void setBiz_time(String biz_time) {
+        this.biz_time = biz_time;
     }
 
     @Override
@@ -83,8 +83,8 @@ public class DatasourceVO {
                 ", ds_url='" + ds_url + '\'' +
                 ", ds_username='" + ds_username + '\'' +
                 ", ds_password='" + ds_password + '\'' +
-                ", bizuser='" + bizuser + '\'' +
-                ", biztime='" + biztime + '\'' +
+                ", bizuser='" + biz_user + '\'' +
+                ", biztime='" + biz_time + '\'' +
                 '}';
     }
 }
